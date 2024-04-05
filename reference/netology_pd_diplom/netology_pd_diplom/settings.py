@@ -81,11 +81,11 @@ DATABASES = {
 
 "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "postgres", # os.getenv("DB_NAME", "azbuka"),
-        "USER": "postgres", # os.getenv("DB_USER", "postgres"),
-        "PASSWORD": "postgres", # os.getenv("DB_PASSWORD", "postgres"),
-        "HOST": "localhost", # os.getenv("DB_HOST", "172.29.0.2"),
-        "PORT": 5432, # os.getenv("DB_PORT", 5432),
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 
 
@@ -108,6 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

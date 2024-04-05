@@ -36,4 +36,6 @@ def new_user_registered_signal(sender: Type[User], instance: User, created: bool
         title = f"Password Reset Token for {instance.email}"
         # send an e-mail to the user
         token, _ = ConfirmEmailToken.objects.get_or_create(user_id=instance.pk)
-        send_email.delay(title, token.key, instance.email)
+        msg = EmailMultiAlternatives(title, message, settings.EMAIL_HOST_USER, to_email)
+        msg.send()
+        #send_email.delay(title, token.key, instance.email)
