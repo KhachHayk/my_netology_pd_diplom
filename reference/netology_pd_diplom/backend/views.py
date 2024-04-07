@@ -1,4 +1,6 @@
+import io
 import json
+import zipfile
 
 from distutils.util import strtobool
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
@@ -6,8 +8,8 @@ from rest_framework.request import Request
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum, F
-from django.http import JsonResponse
+from django.db.models import Sum, F, Prefetch
+from django.http import JsonResponse, HttpResponse
 from rest_framework import generics
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.authtoken.models import Token
@@ -23,6 +25,7 @@ from backend.serializers import UserSerializer, CategorySerializer, ShopSerializ
 from backend.filters import ProductFilter
 from backend.services.basket import BasketOperation
 from backend.services.contacts import ContactOperation
+from backend.services.product import ProductOperation
 from backend.services.order import OrderOperation
 from backend.permissions import ShopsOnly
 from backend.tasks import do_import
@@ -569,3 +572,31 @@ class OrderView(ModelViewSet):
         order_json_response = order_operation.create(serializer.data)
 
         return order_json_response
+
+
+class ExportView(ListAPIView):
+
+    def list(self, request, *args, **kwargs):
+        products = Product.objects.select_related('category').prefetch_related(
+            Prefetch('product_infos', queryset=ProductInfo.objects.select_related('shop').prefetch_related('product_parameters')),
+            'product_infos__product_parameters__parameter'
+        )
+
+        products_data = ProductOperation.convert_queryset_to_list(products)
+        shops_data = list(Shop.objects.values())
+        categories_data = list(Category.objects.values())
+
+        buffer = io.BytesIO()
+
+        with zipfile.ZipFile(buffer, 'w') as zipf:
+            zipf.writestr('products.json', json.dumps(products_data, ensure_ascii=False))
+            zipf.writestr('shops.json', json.dumps(shops_data, ensure_ascii=False))
+            zipf.writestr('categories.json', json.dumps(categories_data, ensure_ascii=False))
+
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename="exported_data.zip"'
+        return response
+
+

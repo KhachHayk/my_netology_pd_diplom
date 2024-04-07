@@ -4,7 +4,7 @@ from django_rest_passwordreset.views import reset_password_request_token, reset_
 
 from backend.views import PartnerUpdate, RegisterAccount, LoginAccount, CategoryView, ShopView, ProductInfoView, \
     BasketView, \
-    AccountDetails, ContactView, OrderView, PartnerState, PartnerOrders, ConfirmAccount
+    AccountDetails, ContactView, OrderView, PartnerState, PartnerOrders, ConfirmAccount, ExportView
 
 details_methods = {"get": "retrieve", "put": "update", "delete": "destroy"}
 list_create_methods = {"get": "list", "post": "create"}
@@ -34,4 +34,5 @@ urlpatterns = [
     path('shops', ShopView.as_view(), name='shops'),
     path('products', ProductInfoView.as_view({"get": "list"}), name='products'),
     path('order', OrderView.as_view(list_create_methods), name='order'),
+    path('export', ExportView.as_view(), name='export')
 ]
